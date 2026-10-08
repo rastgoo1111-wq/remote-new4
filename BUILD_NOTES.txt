@@ -1,0 +1,11 @@
+RASTA Universal Audio IR Remote v11.1.1 — GitHub build repair
+
+- Canonical workflow: .github/workflows/build.yml
+- Workflow display name matches the setup guide: Android Build
+- Runs for pushes to any branch, pull requests, and manual dispatch
+- Provisions JDK 17, Android SDK 35, and Gradle 8.9
+- Validates required files, AndroidManifest.xml, and inline JavaScript syntax
+- Builds Debug and unsigned Release APKs
+- Uploads both APK artifacts and SHA-256 checksums
+- No Gradle wrapper is included; the workflow explicitly installs Gradle
+- Full Android build must be confirmed by the GitHub Actions runner

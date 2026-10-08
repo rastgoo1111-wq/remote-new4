@@ -1,0 +1,30 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.ehsan.onkyo185'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.ehsan.onkyo185'
+        minSdk 23
+        targetSdk 35
+        versionCode 111
+        versionName '11.1.0'
+        resConfigs "fa", "en"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                    'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures { buildConfig true }
+}

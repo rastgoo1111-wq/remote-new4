@@ -1,0 +1,98 @@
+RASTA Universal Audio IR Remote v11.1.0 — Validation Report
+============================================================
+
+Scope
+-----
+Hardened revision of FINAL v11 source. Focus: Pioneer protocol correctness,
+repeat semantics, persistent-memory verification integrity, WebView hardening,
+and discovery safety.
+
+Static validation
+-----------------
+[PASS] Java source compiled with javac 21 against Android API stubs.
+[PASS] JavaScript extracted from index.html passed Node.js --check.
+[PASS] All getElementById() references resolve to declared DOM ids.
+[PASS] All direct onclick function references resolve to declared JS functions.
+[PASS] No stale RASTA-IR-MEMORY-3 / 11.0.0 references remain in active HTML.
+
+IR waveform validation
+----------------------
+[PASS] NEC/Onkyo canonical frame: 69,110 us total.
+[PASS] NEC1 full frame + short-repeat frame remains within 1.8 s safety limit.
+[PASS] Sony SIRC 15-bit frame: 45,000 us target cycle.
+[PASS] Sony repeated frame pattern remains within safety limit.
+[PASS] JVC frame: 46,420 us target word cycle.
+[PASS] JVC repeated frame pattern remains within safety limit.
+[PASS] Pioneer 32-bit frame: 40 kHz timing family; D=160..175 supported by discovery.
+[PASS] Pioneer byte structure is D, ~D, F, ~F; no independent subdevice is encoded.
+[PASS] Pioneer optional two-frame form uses a short inter-frame pause and remains
+       below the 1.8 s transmit safety ceiling.
+
+Memory integrity
+----------------
+[PASS] Memory schema upgraded to RASTA-IR-MEMORY-4.
+[PASS] Imported/legacy records cannot become active merely by clicking confirm.
+[PASS] Exact record must be transmitted successfully before verification.
+[PASS] Verification is bound to the exact record fingerprint.
+[PASS] Active override additionally requires verifiedAt + verificationResult.
+[PASS] Previous v3 preference namespace is migrated into v4 storage, but old
+       records remain non-active until physically re-tested.
+
+WebView hardening
+-----------------
+[PASS] Content access disabled.
+[PASS] File-origin access to other file URLs disabled.
+[PASS] Universal file-origin access disabled.
+
+Build limitation
+----------------
+A full Android Gradle build was not executed in this environment because the
+Android SDK/Gradle distribution was not locally available and outbound network
+resolution failed. The GitHub Actions workflow remains configured to build
+Debug and unsigned Release APKs with JDK 17, Gradle 8.9, AGP 8.7.3 and SDK 35.
+
+Important physical-device limitation
+-------------------------------------
+ConsumerIrManager.transmit() returning successfully only means Android accepted
+and transmitted the pattern. This application has no IR receiver in its current
+architecture, so device response still requires physical confirmation.
+
+Protocol evidence note
+----------------------
+Pioneer family evidence was checked against DecodeIR/IRLremote and Tasmota
+references during the hardening pass. Pioneer is treated as a family-level
+candidate for CU-AP015; no unverified CU-AP015 factory command table is claimed.
+
+
+SECOND RE-AUDIT — 2026-10-08
+============================
+
+Findings from the GitHub-package re-audit
+-----------------------------------------
+[FIXED] Duplicate GitHub Actions workflows removed. There is now one canonical build workflow.
+[FIXED] The misleading executable `gradlew` placeholder was removed. GitHub Actions explicitly provisions Gradle 8.9.
+[FIXED] Pioneer Auto Discovery default was incorrect: 160..175 had been scanned as COMMAND values. It now defaults to ADDRESS/DEVICE scanning over 160..175.
+[FIXED] Pioneer UI no longer labels its unused B field as a Pioneer subdevice.
+[FIXED] Pioneer repeat=2 is no longer described as a generic 64-bit/compound command. It is treated as two identical 32-bit transmissions.
+[FIXED] True Pioneer compound commands are not fabricated. A compound command must supply a second, independently learned Pioneer frame.
+
+Protocol evidence
+-----------------
+DecodeIR/IRLremote documents Pioneer as:
+{40k,564}<1,-1|1,-3>(16,-8,D:8,~D:8,F:8,~F:8,1,-78)+
+with device values 160..175 and no subdevice. It also notes that many Pioneer commands
+are combinations of two different Pioneer signals. Therefore a universal encoder must
+not manufacture a second frame by simply copying the first.
+
+Remaining limitation
+--------------------
+The current UI does not yet contain a full two-frame Pioneer compound database/learned
+mapping (device1/command1 + device2/command2). This is intentionally left as a limitation
+rather than pretending that a duplicated frame is equivalent to every Pioneer compound command.
+
+THIRD RE-AUDIT — 2026-10-08
+===========================
+[FIXED] Pioneer key buttons now open COMMAND discovery (fixed Device 160, Command 0..255), rather than incorrectly scanning Device 160..175.
+[ADDED] Separate Pioneer DEVICE discovery mode for scanning Device 160..175.
+[FIXED] GitHub workflow uses a single Gradle 8.9 setup and explicit :app tasks; no fake Gradle wrapper executable is included.
+[VALIDATED] JavaScript syntax, manifest XML, and Java brace balance were checked locally. Full Android compilation remains a GitHub-runner task because the current environment has no Android SDK/Gradle installation.
